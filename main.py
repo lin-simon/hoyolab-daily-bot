@@ -62,7 +62,7 @@ async def claim(ctx: SlashContext):
             await ctx.send(result)              
     except KeyError:
         await ctx.send("no account linked, do /authenticate")
-
+        
 @slash_command(name="guide", description="learn how to use bot")
 async def guide(ctx: SlashContext):
     embed = Embed(
