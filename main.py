@@ -1,7 +1,11 @@
 import os
 
 from token_manager import populate_db, update_db, remove_from_db, sanitize_token
-from claim import check_in, reward_image
+from claim import check_in
+from assets import reward_image
+from embeds import init_embeds
+
+from interactions.ext.paginators import Page, Paginator
 from interactions import (
     Client,
     slash_command,  
@@ -10,10 +14,17 @@ from interactions import (
     ModalContext,
     ShortText, 
     ParagraphText,
-    Embed
+    Embed,
+    Activity,
+    ActivityType,
 )
 
-bot = Client(token=os.getenv("hsr_token"))
+embeds = init_embeds()
+
+client = Client(token=os.getenv("hsr_token"))
+
+async def on_ready():
+    await client.change_presence(activity=Activity(type=ActivityType.GAME, name="/guide"))
 
 @slash_command(name="authenticate", description="share your senstive info!!!")
 async def authenticate(ctx: SlashContext):
@@ -44,6 +55,7 @@ async def unlink(ctx: SlashContext):
         await ctx.send("unlinked!")
     except KeyError:
         await ctx.send("no account linked")
+
 @slash_command(name="claim", description="claim star rail daily rewards!!")
 async def claim(ctx: SlashContext):
     try:
@@ -65,31 +77,15 @@ async def claim(ctx: SlashContext):
         
 @slash_command(name="guide", description="learn how to use bot")
 async def guide(ctx: SlashContext):
-    embed = Embed(
-        title="STEP 1: GO TO STARRAIL CHECK-IN PAGE",
-        color=1752220,
-        description="GO TO THE DAILY REWARD PAGE: https://act.hoyolab.com/bbs/event/signin/hkrpg/index.html?act_id=e202303301540311")
-    await ctx.send(embeds=embed)
-    embed = Embed(
-        title="STEP 2: OPEN UP THE CONSOLE",
-        color=1752220,
-        description="DO **CTRL + SHIFT + J** , will look something like this idfk")
-    embed.set_image(url='https://media.discordapp.net/attachments/943645146837307445/1120940886663123024/image.png?width=856&height=672')  
-    await ctx.send(embeds=embed)    
-    embed = Embed(
-        title="STEP 3: GET YOUR TOKEN",
-        color=1752220,
-        description="type **`document.cookie`** into the console and press enter, copy the whole token to your clipboard")
-    embed.set_image(url='https://cdn.discordapp.com/attachments/943645146837307445/1120643032694390856/image.png')  
-    await ctx.send(embeds=embed) 
-    embed = Embed(
-        title="STEP 4: VERIFY YOUR TOKEN",
-        color=1752220,
-        description="do /authenticate and paste your token in")
-    embed.set_image('https://cdn.discordapp.com/attachments/943645146837307445/1120635685783736370/image.png')
-    await ctx.send(embeds=embed)   
+    
+    paginator = Paginator.create_from_embeds(client, *embeds)    
+    paginator.show_first_button = False
+    paginator.show_last_button = False
+    paginator.show_select_menu = True
+    
+    await paginator.send(ctx)
 
-bot.start()
+client.start()
 
 
 
