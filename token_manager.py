@@ -37,5 +37,3 @@ def sanitize_token(token):
 if __name__ == "__main__":
     cookies_db = populate_db()
     print(sanitize_token('ltoken=; ltuid=;'))
-    print(cookies_db)
-    remove_from_db('437070416780066817')
